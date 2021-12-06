@@ -1,24 +1,21 @@
-import { IsNumber, IsNotEmpty, IsString, IsUrl } from 'class-validator'
-import { PageSchema } from '../pages.schema';
+import { IsNumber, IsNotEmpty, IsString, IsUrl } from 'class-validator';
 
 export class PageRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  title: string;
 
-    @IsString()
-    @IsNotEmpty()
-    title : string;
+  @IsUrl()
+  logoUrl: string;
 
-    @IsUrl()
-    logoUrl : string;
+  @IsNumber()
+  status: number;
 
-    @IsNumber()
-    status : number;
+  @IsNumber()
+  version: number;
 
-    @IsNumber()
-    version : number;
+  @IsString()
+  content: string;
 
-    @IsString()
-    content : string;
-
-    comment : [];
-
+  comment: [];
 }

@@ -4,13 +4,15 @@ import {
   Param,
   Post,
   Patch,
+  Req,
   Body,
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, AnyFilesInterceptor } from '@nestjs/platform-express';
 import { PageService } from './pages.service';
 import { PageRequestDto } from './dto/pages.request.dto';
+import { Express } from 'express';
 
 @Controller('pages')
 export class PageController {
@@ -27,8 +29,10 @@ export class PageController {
   }
 
   @Post()
-  createPage(@Body() body: PageRequestDto) {
-    return this.PageService.createPage(body);
+  @UseInterceptors(AnyFilesInterceptor())
+  createPage(@Body() body: any) {
+    console.log('생성을 원한다', body);
+    return this.PageService.createPage(body.title);
   }
 
   @Patch(':id')
@@ -36,10 +40,9 @@ export class PageController {
   updatePage(
     @Param('id') id: string,
     @Body() body,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File
   ) {
-    console.log(file);
-    // return this.PageService.updatePage(id, body);
+    return this.PageService.updatePage(id, body, file);
   }
 
   @Get('list/:query')
