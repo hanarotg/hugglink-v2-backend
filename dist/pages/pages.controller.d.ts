@@ -7,7 +7,7 @@ export declare class PageController {
     constructor(PageService: PageService);
     getPage(title: string): Promise<PageRequestDto>;
     searchPage(title: string): Promise<object>;
-    createPage(body: any): Promise<import("./pages.schema").Page>;
+    createPage(body: any): Promise<any>;
     updatePage(id: string, body: any, file: Express.Multer.File): Promise<import("./pages.schema").Page & import("mongoose").Document<any, any, any> & {
         _id: any;
     }>;

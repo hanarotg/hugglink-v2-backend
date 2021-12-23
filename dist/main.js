@@ -7,6 +7,12 @@ const app_module_1 = require("./app.module");
 const http_exceoption_filter_1 = require("./http-exceoption.filter");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.enableCors({
+        origin: [`${process.env.FRONTEND}`],
+        methods: 'OPTIONS,GET,HEAD,PUT,PATCH,POST,DELETE',
+        preflightContinue: false,
+        credentials: true,
+    });
     app.useGlobalPipes(new common_1.ValidationPipe({
         transform: true,
         transformOptions: {
@@ -15,13 +21,6 @@ async function bootstrap() {
     }));
     app.use(cookieParser());
     app.useGlobalFilters(new http_exceoption_filter_1.HttpExceptionFilter());
-    app.enableCors({
-        origin: [process.env.FRONTEND],
-        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-        preflightContinue: false,
-        optionsSuccessStatus: 204,
-        credentials: true,
-    });
     await app.listen(3030);
 }
 bootstrap();

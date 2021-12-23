@@ -5,7 +5,7 @@ export declare class PageService {
     constructor(pageModel: Model<PageDocument>);
     getPage(title: string): Promise<Page>;
     searchPage(title: string): Promise<object>;
-    createPage(title: string): Promise<Page>;
+    createPage(title: string): Promise<any>;
     updatePage(id: string, body: any, file: any): Promise<Page & import("mongoose").Document<any, any, any> & {
         _id: any;
     }>;

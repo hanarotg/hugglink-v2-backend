@@ -37,7 +37,8 @@ let PageService = class PageService {
         if (isPageExist) {
             throw new common_1.HttpException('존재하는 동명의 페이지가 있습니다.', 400);
         }
-        return await this.pageModel.create(title);
+        const page = { title: title };
+        return await this.pageModel.create(page);
     }
     async updatePage(id, body, file) {
         if (file != undefined) {

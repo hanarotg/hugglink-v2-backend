@@ -26,7 +26,7 @@ export class PageService {
   }
 
   // 페이지 생성
-  async createPage(title: string): Promise<Page> {
+  async createPage(title: string): Promise<any> {
     // 동명의 페이지 존재여부 확인
     const isPageExist = await this.pageModel.exists({ title: title });
     if (isPageExist) {
@@ -34,7 +34,8 @@ export class PageService {
     }
 
     // 페이지 생성
-    return await this.pageModel.create(title);
+    const page = { title: title };
+    return await this.pageModel.create(page);
   }
 
   // 페이지 정보 갱신
