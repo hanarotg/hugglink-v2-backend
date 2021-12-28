@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import * as AWS from 'aws-sdk';
 
 import { Page, PageDocument } from './pages.schema';
+import { Request } from 'express';
 import { PageRequestDto } from './dto/pages.request.dto';
 
 @Injectable()
@@ -13,16 +14,6 @@ export class PageService {
   // 페이지 정보 가져오기
   async getPage(title: string): Promise<Page> {
     return await this.pageModel.findOne({ title: title }).exec();
-  }
-
-  // 페이지 검색
-  // 이부분 이해가 잘 안간다.
-  async searchPage(title: string): Promise<object> {
-    const query = new RegExp(title);
-    return await this.pageModel
-      .find({ title: query }, 'title')
-      .limit(10)
-      .exec();
   }
 
   // 페이지 생성
@@ -42,9 +33,9 @@ export class PageService {
   async updatePage(id: string, body: any, file: any) {
     // 로고 이미지를 수정하였을 때
     if (file != undefined) {
-      const image: any = await this.uploadImage(id, file);
+      const imageUrl = await this.uploadImage(id, file);
       return await this.pageModel.findByIdAndUpdate(id, {
-        $set: { content: body.content, logoUrl: image.Location },
+        $set: { content: body.content, logoUrl: imageUrl },
       });
     }
 
@@ -54,34 +45,45 @@ export class PageService {
     });
   }
 
-  // 페이지 정렬
-  async listPage(): Promise<Page[]> {
-    return await this.pageModel.find({}, 'title').exec();
+  // 페이지 검색 및 리스팅
+  async listPage(page: number, query: Request['query']): Promise<Page[]> {
+    return await this.pageModel
+      .find({ title: { $regex: `${query.title ? query.title : ''}` } })
+      .select('title')
+      .skip((page - 1) * 10)
+      .exec();
   }
 
   // 이미지 업로드 함수
-  async uploadImage(title: string, file: any) {
+  async uploadImage(id: string, file: any) {
+    // AWS 버킷 접속
+    AWS.config.update({
+      accessKeyId: process.env.S3_MAIN_ACCESS_KEY,
+      secretAccessKey: process.env.S3_MAIN_SECRET_KEY,
+      region: process.env.S3_MAIN_REGION,
+    });
+    const s3 = new AWS.S3();
     return new Promise((resolve, reject) => {
-      // AWS 버킷 접속
-      AWS.config.update({
-        accessKeyId: process.env.S3_MAIN_ACCESS_KEY,
-        secretAccessKey: process.env.S3_MAIN_SECRET_KEY,
-        region: process.env.S3_MAIN_REGION,
-      });
-      const s3 = new AWS.S3();
-
+      const mimetypeAllowed = ['image/png', 'image/jpeg', 'image/svg+xml'];
       // 이미지 형식이 png 또는 jpg 인지 확인
-      if (file.mimetype != 'image/png' && file.mimetype != 'image/jpeg') {
+      if (!mimetypeAllowed.includes(file.mimetype)) {
         throw new HttpException(
           '지원하지 않는 이미지 형식입니다. png또는 jpg 파일로 다시 시도해보세요',
           404
         );
       }
 
+      // 조잡하지만 임시방편으로
+      let type = 'png';
+      if (file.mimetype == 'image/svg+xml') {
+        type = 'svg';
+      }
+
       s3.upload(
         {
           Bucket: process.env.S3_MAIN_BUCKET_NAME,
-          Key: `pages/${title}/logo.png`,
+          Key: `pages/${id}/logo.${type}`,
+          ContentType: file.mimetype,
           Body: Buffer.from(file.buffer, 'binary'),
         },
         (error, data) => {
@@ -91,7 +93,7 @@ export class PageService {
               401
             );
           }
-          resolve(data);
+          resolve(data.Location);
         }
       );
     });

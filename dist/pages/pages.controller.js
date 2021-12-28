@@ -23,18 +23,14 @@ let PageController = class PageController {
     getPage(title) {
         return this.PageService.getPage(title);
     }
-    searchPage(title) {
-        return this.PageService.searchPage(title);
-    }
     createPage(body) {
-        console.log('생성을 원한다', body);
         return this.PageService.createPage(body.title);
     }
     updatePage(id, body, file) {
         return this.PageService.updatePage(id, body, file);
     }
-    listPage() {
-        return this.PageService.listPage();
+    listPage(page, query) {
+        return this.PageService.listPage(page, query);
     }
 };
 __decorate([
@@ -44,13 +40,6 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], PageController.prototype, "getPage", null);
-__decorate([
-    (0, common_1.Get)('search/:title'),
-    __param(0, (0, common_1.Param)('title')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], PageController.prototype, "searchPage", null);
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.UseInterceptors)((0, platform_express_1.AnyFilesInterceptor)()),
@@ -70,9 +59,11 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PageController.prototype, "updatePage", null);
 __decorate([
-    (0, common_1.Get)('list/:query'),
+    (0, common_1.Get)('list/:page'),
+    __param(0, (0, common_1.Param)('page')),
+    __param(1, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)
 ], PageController.prototype, "listPage", null);
 PageController = __decorate([

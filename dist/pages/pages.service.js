@@ -25,13 +25,6 @@ let PageService = class PageService {
     async getPage(title) {
         return await this.pageModel.findOne({ title: title }).exec();
     }
-    async searchPage(title) {
-        const query = new RegExp(title);
-        return await this.pageModel
-            .find({ title: query }, 'title')
-            .limit(10)
-            .exec();
-    }
     async createPage(title) {
         const isPageExist = await this.pageModel.exists({ title: title });
         if (isPageExist) {
@@ -42,38 +35,48 @@ let PageService = class PageService {
     }
     async updatePage(id, body, file) {
         if (file != undefined) {
-            const image = await this.uploadImage(id, file);
+            const imageUrl = await this.uploadImage(id, file);
             return await this.pageModel.findByIdAndUpdate(id, {
-                $set: { content: body.content, logoUrl: image.Location },
+                $set: { content: body.content, logoUrl: imageUrl },
             });
         }
         return await this.pageModel.findByIdAndUpdate(id, {
             $set: { content: body.content },
         });
     }
-    async listPage() {
-        return await this.pageModel.find({}, 'title').exec();
+    async listPage(page, query) {
+        return await this.pageModel
+            .find({ title: { $regex: `${query.title ? query.title : ''}` } })
+            .select('title')
+            .skip((page - 1) * 10)
+            .exec();
     }
-    async uploadImage(title, file) {
+    async uploadImage(id, file) {
+        AWS.config.update({
+            accessKeyId: process.env.S3_MAIN_ACCESS_KEY,
+            secretAccessKey: process.env.S3_MAIN_SECRET_KEY,
+            region: process.env.S3_MAIN_REGION,
+        });
+        const s3 = new AWS.S3();
         return new Promise((resolve, reject) => {
-            AWS.config.update({
-                accessKeyId: process.env.S3_MAIN_ACCESS_KEY,
-                secretAccessKey: process.env.S3_MAIN_SECRET_KEY,
-                region: process.env.S3_MAIN_REGION,
-            });
-            const s3 = new AWS.S3();
-            if (file.mimetype != 'image/png' && file.mimetype != 'image/jpeg') {
+            const mimetypeAllowed = ['image/png', 'image/jpeg', 'image/svg+xml'];
+            if (!mimetypeAllowed.includes(file.mimetype)) {
                 throw new common_1.HttpException('지원하지 않는 이미지 형식입니다. png또는 jpg 파일로 다시 시도해보세요', 404);
+            }
+            let type = 'png';
+            if (file.mimetype == 'image/svg+xml') {
+                type = 'svg';
             }
             s3.upload({
                 Bucket: process.env.S3_MAIN_BUCKET_NAME,
-                Key: `pages/${title}/logo.png`,
+                Key: `pages/${id}/logo.${type}`,
+                ContentType: file.mimetype,
                 Body: Buffer.from(file.buffer, 'binary'),
             }, (error, data) => {
                 if (error) {
                     throw new common_1.HttpException('파일을 업로드 할 수 없습니다. 관리자에게 문의하세요.', 401);
                 }
-                resolve(data);
+                resolve(data.Location);
             });
         });
     }
