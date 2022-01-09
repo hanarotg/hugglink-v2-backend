@@ -1,5 +1,4 @@
 /// <reference types="multer" />
-/// <reference types="mongoose" />
 import { PageService } from './pages.service';
 import { PageRequestDto } from './dto/pages.request.dto';
 import { Request } from 'express';

@@ -6,6 +6,7 @@ import * as AWS from 'aws-sdk';
 import { Page, PageDocument } from './pages.schema';
 import { Request } from 'express';
 import { PageRequestDto } from './dto/pages.request.dto';
+import * as diff from 'diff';
 
 @Injectable()
 export class PageService {
@@ -25,7 +26,7 @@ export class PageService {
     }
 
     // 페이지 생성
-    const page = { title: title };
+    const page = { title: title, version: 1 };
     return await this.pageModel.create(page);
   }
 
@@ -39,9 +40,20 @@ export class PageService {
       });
     }
 
+    // diff 알고리즘 적용, Patch 생성
+    const page = await this.pageModel.findById(id);
+    const diffPatch = diff.structuredPatch(
+      page.version,
+      page.version + 1,
+      page.content,
+      body.content
+    );
+
+    // patch 저장
+
     // 수정하지 않은 경우
     return await this.pageModel.findByIdAndUpdate(id, {
-      $set: { content: body.content },
+      $set: { content: body.content, version: page.version + 1 },
     });
   }
 

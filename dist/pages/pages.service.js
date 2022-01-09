@@ -18,6 +18,7 @@ const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 const AWS = require("aws-sdk");
 const pages_schema_1 = require("./pages.schema");
+const diff = require("diff");
 let PageService = class PageService {
     constructor(pageModel) {
         this.pageModel = pageModel;
@@ -30,7 +31,7 @@ let PageService = class PageService {
         if (isPageExist) {
             throw new common_1.HttpException('존재하는 동명의 페이지가 있습니다.', 400);
         }
-        const page = { title: title };
+        const page = { title: title, version: 1 };
         return await this.pageModel.create(page);
     }
     async updatePage(id, body, file) {
@@ -40,8 +41,11 @@ let PageService = class PageService {
                 $set: { content: body.content, logoUrl: imageUrl },
             });
         }
+        const page = await this.pageModel.findById(id);
+        const d = diff.structuredPatch(page.version, page.version + 1, page.content, body.content);
+        console.log(d);
         return await this.pageModel.findByIdAndUpdate(id, {
-            $set: { content: body.content },
+            $set: { content: body.content, version: page.version + 1 },
         });
     }
     async listPage(page, query) {
