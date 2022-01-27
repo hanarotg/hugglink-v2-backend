@@ -29,6 +29,9 @@ let PageController = class PageController {
     updatePage(id, body, file) {
         return this.PageService.updatePage(id, body, file);
     }
+    getPageHistory(title) {
+        return this.PageService.getPageHistory(title);
+    }
     listPage(page, query) {
         return this.PageService.listPage(page, query);
     }
@@ -38,7 +41,7 @@ __decorate([
     __param(0, (0, common_1.Param)('title')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], PageController.prototype, "getPage", null);
 __decorate([
     (0, common_1.Post)(),
@@ -59,12 +62,19 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PageController.prototype, "updatePage", null);
 __decorate([
+    (0, common_1.Get)(':title/history'),
+    __param(0, (0, common_1.Param)('title')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], PageController.prototype, "getPageHistory", null);
+__decorate([
     (0, common_1.Get)('list/:page'),
     __param(0, (0, common_1.Param)('page')),
     __param(1, (0, common_1.Query)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], PageController.prototype, "listPage", null);
 PageController = __decorate([
     (0, common_1.Controller)('pages'),

@@ -12,6 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PageSchema = exports.Page = void 0;
 const mongoose_1 = require("@nestjs/mongoose");
 const class_validator_1 = require("class-validator");
+const diff_schema_1 = require("./diff.schema");
+const comment_schema_1 = require("./comment.schema");
 let Page = class Page {
 };
 __decorate([
@@ -43,7 +45,11 @@ __decorate([
     __metadata("design:type", String)
 ], Page.prototype, "content", void 0);
 __decorate([
-    (0, mongoose_1.Prop)(),
+    (0, mongoose_1.Prop)({ type: [diff_schema_1.DiffSchema] }),
+    __metadata("design:type", Array)
+], Page.prototype, "diff", void 0);
+__decorate([
+    (0, mongoose_1.Prop)({ type: [comment_schema_1.CommentSchema] }),
     __metadata("design:type", Array)
 ], Page.prototype, "comment", void 0);
 Page = __decorate([

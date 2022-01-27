@@ -3,11 +3,9 @@ import {
   Controller,
   Get,
   Post,
-  Param,
   Res,
   Req,
   UseInterceptors,
-  ConsoleLogger,
 } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response, Request, request } from 'express';
@@ -32,7 +30,7 @@ export class UsersController {
   ) {
     const jwt = await this.UsersService.loginUser(body);
     // 실서버에서는 secure : true 옵션 추가
-    response.cookie('jwt', jwt, { httpOnly: true });
+    response.cookie('hugg.link', jwt, { httpOnly: true });
 
     return jwt;
   }
@@ -44,7 +42,7 @@ export class UsersController {
     @Res({ passthrough: true }) response: Response
   ) {
     // console.log(request.cookies['jwt']);
-    response.clearCookie('jwt', { httpOnly: true });
+    response.clearCookie('hugg.link', { httpOnly: true });
     return;
   }
 

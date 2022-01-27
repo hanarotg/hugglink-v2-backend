@@ -9,6 +9,7 @@ export declare class PageService {
     updatePage(id: string, body: any, file: any): Promise<Page & import("mongoose").Document<any, any, any> & {
         _id: any;
     }>;
+    getPageHistory(title: string): Promise<any>;
     listPage(page: number, query: Request['query']): Promise<Page[]>;
     uploadImage(id: string, file: any): Promise<unknown>;
 }

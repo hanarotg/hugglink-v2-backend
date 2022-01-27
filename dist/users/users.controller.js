@@ -25,11 +25,11 @@ let UsersController = class UsersController {
     }
     async loginUser(body, response) {
         const jwt = await this.UsersService.loginUser(body);
-        response.cookie('jwt', jwt, { httpOnly: true });
+        response.cookie('hugg.link', jwt, { httpOnly: true });
         return jwt;
     }
     logout(request, response) {
-        response.clearCookie('jwt', { httpOnly: true });
+        response.clearCookie('hugg.link', { httpOnly: true });
         return;
     }
     signupUser(body) {

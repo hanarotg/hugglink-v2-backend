@@ -25,7 +25,7 @@ let UsersService = class UsersService {
         this.JwtService = JwtService;
     }
     async authenticateUser(request) {
-        const cookie = await request.cookies['jwt'];
+        const cookie = await request.cookies['hugg.link'];
         if (!cookie) {
             throw new common_1.HttpException('로그인 인증 정보를 찾을 수 없습니다.', 404);
         }

@@ -42,11 +42,20 @@ let PageService = class PageService {
             });
         }
         const page = await this.pageModel.findById(id);
-        const d = diff.structuredPatch(page.version, page.version + 1, page.content, body.content);
-        console.log(d);
+        const diffPatch = diff.structuredPatch(page.version, page.version + 1, page.content, body.content);
+        page.diff.push({
+            date: new Date(),
+            diff: diffPatch,
+            author: 'anonymous',
+        });
+        page.save();
         return await this.pageModel.findByIdAndUpdate(id, {
             $set: { content: body.content, version: page.version + 1 },
         });
+    }
+    async getPageHistory(title) {
+        const page = await this.pageModel.findOne({ title: title }).exec();
+        return page.diff;
     }
     async listPage(page, query) {
         return await this.pageModel

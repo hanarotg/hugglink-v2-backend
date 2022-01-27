@@ -18,7 +18,7 @@ export class UsersService {
   // JWT 검증
   async authenticateUser(request: Request): Promise<string | any> {
     // 쿠키 존재 유무 확인
-    const cookie = await request.cookies['jwt'];
+    const cookie = await request.cookies['hugg.link'];
     if (!cookie) {
       throw new HttpException('로그인 인증 정보를 찾을 수 없습니다.', 404);
     }

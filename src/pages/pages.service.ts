@@ -5,7 +5,6 @@ import * as AWS from 'aws-sdk';
 
 import { Page, PageDocument } from './pages.schema';
 import { Request } from 'express';
-import { PageRequestDto } from './dto/pages.request.dto';
 import * as diff from 'diff';
 
 @Injectable()
@@ -48,13 +47,24 @@ export class PageService {
       page.content,
       body.content
     );
+    page.diff.push({
+      date: new Date(),
+      diff: diffPatch,
+      author: 'anonymous',
+    });
+    page.save();
 
-    // patch 저장
-
-    // 수정하지 않은 경우
+    // 업데이트
     return await this.pageModel.findByIdAndUpdate(id, {
       $set: { content: body.content, version: page.version + 1 },
     });
+  }
+
+  // 페이지 역사 가져오기
+  async getPageHistory(title: string): Promise<any> {
+    // 페이지 정보 가져오기
+    const page = await this.pageModel.findOne({ title: title }).exec();
+    return page.diff;
   }
 
   // 페이지 검색 및 리스팅
