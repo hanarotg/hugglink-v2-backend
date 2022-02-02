@@ -29,24 +29,29 @@ let PageService = class PageService {
     async createPage(title) {
         const isPageExist = await this.pageModel.exists({ title: title });
         if (isPageExist) {
-            throw new common_1.HttpException('존재하는 동명의 페이지가 있습니다.', 400);
+            throw new common_1.HttpException("존재하는 동명의 페이지가 있습니다.", 400);
+        }
+        if (!title) {
+            throw new common_1.HttpException("생성하고자 하는 페이지명을 입력해주세요.", common_1.HttpStatus.BAD_REQUEST);
         }
         const page = { title: title, version: 1 };
         return await this.pageModel.create(page);
     }
     async updatePage(id, body, file) {
+        var _a;
         if (file != undefined) {
             const imageUrl = await this.uploadImage(id, file);
             return await this.pageModel.findByIdAndUpdate(id, {
                 $set: { content: body.content, logoUrl: imageUrl },
             });
         }
+        console.log(body);
         const page = await this.pageModel.findById(id);
         const diffPatch = diff.structuredPatch(page.version, page.version + 1, page.content, body.content);
         page.diff.push({
             date: new Date(),
             diff: diffPatch,
-            author: 'anonymous',
+            author: (_a = body.author) !== null && _a !== void 0 ? _a : "anonymous",
         });
         page.save();
         return await this.pageModel.findByIdAndUpdate(id, {
@@ -59,8 +64,8 @@ let PageService = class PageService {
     }
     async listPage(page, query) {
         return await this.pageModel
-            .find({ title: { $regex: `${query.title ? query.title : ''}` } })
-            .select('title')
+            .find({ title: { $regex: `${query.title ? query.title : ""}` } })
+            .select("title")
             .skip((page - 1) * 10)
             .exec();
     }
@@ -72,22 +77,22 @@ let PageService = class PageService {
         });
         const s3 = new AWS.S3();
         return new Promise((resolve, reject) => {
-            const mimetypeAllowed = ['image/png', 'image/jpeg', 'image/svg+xml'];
+            const mimetypeAllowed = ["image/png", "image/jpeg", "image/svg+xml"];
             if (!mimetypeAllowed.includes(file.mimetype)) {
-                throw new common_1.HttpException('지원하지 않는 이미지 형식입니다. png또는 jpg 파일로 다시 시도해보세요', 404);
+                throw new common_1.HttpException("지원하지 않는 이미지 형식입니다. png또는 jpg 파일로 다시 시도해보세요", 404);
             }
-            let type = 'png';
-            if (file.mimetype == 'image/svg+xml') {
-                type = 'svg';
+            let type = "png";
+            if (file.mimetype == "image/svg+xml") {
+                type = "svg";
             }
             s3.upload({
                 Bucket: process.env.S3_MAIN_BUCKET_NAME,
                 Key: `pages/${id}/logo.${type}`,
                 ContentType: file.mimetype,
-                Body: Buffer.from(file.buffer, 'binary'),
+                Body: Buffer.from(file.buffer, "binary"),
             }, (error, data) => {
                 if (error) {
-                    throw new common_1.HttpException('파일을 업로드 할 수 없습니다. 관리자에게 문의하세요.', 401);
+                    throw new common_1.HttpException("파일을 업로드 할 수 없습니다. 관리자에게 문의하세요.", 401);
                 }
                 resolve(data.Location);
             });

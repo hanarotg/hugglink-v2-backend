@@ -1,11 +1,11 @@
-import { HttpException, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import * as AWS from 'aws-sdk';
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import * as AWS from "aws-sdk";
 
-import { Page, PageDocument } from './pages.schema';
-import { Request } from 'express';
-import * as diff from 'diff';
+import { Page, PageDocument } from "./pages.schema";
+import { Request } from "express";
+import * as diff from "diff";
 
 @Injectable()
 export class PageService {
@@ -21,7 +21,15 @@ export class PageService {
     // 동명의 페이지 존재여부 확인
     const isPageExist = await this.pageModel.exists({ title: title });
     if (isPageExist) {
-      throw new HttpException('존재하는 동명의 페이지가 있습니다.', 400);
+      throw new HttpException("존재하는 동명의 페이지가 있습니다.", 400);
+    }
+
+    // 빈 페이지 명을 전송하였을 때
+    if (!title) {
+      throw new HttpException(
+        "생성하고자 하는 페이지명을 입력해주세요.",
+        HttpStatus.BAD_REQUEST
+      );
     }
 
     // 페이지 생성
@@ -50,7 +58,7 @@ export class PageService {
     page.diff.push({
       date: new Date(),
       diff: diffPatch,
-      author: 'anonymous',
+      author: body.author ?? "anonymous",
     });
     page.save();
 
@@ -68,10 +76,10 @@ export class PageService {
   }
 
   // 페이지 검색 및 리스팅
-  async listPage(page: number, query: Request['query']): Promise<Page[]> {
+  async listPage(page: number, query: Request["query"]): Promise<Page[]> {
     return await this.pageModel
-      .find({ title: { $regex: `${query.title ? query.title : ''}` } })
-      .select('title')
+      .find({ title: { $regex: `${query.title ? query.title : ""}` } })
+      .select("title")
       .skip((page - 1) * 10)
       .exec();
   }
@@ -86,19 +94,19 @@ export class PageService {
     });
     const s3 = new AWS.S3();
     return new Promise((resolve, reject) => {
-      const mimetypeAllowed = ['image/png', 'image/jpeg', 'image/svg+xml'];
+      const mimetypeAllowed = ["image/png", "image/jpeg", "image/svg+xml"];
       // 이미지 형식이 png 또는 jpg 인지 확인
       if (!mimetypeAllowed.includes(file.mimetype)) {
         throw new HttpException(
-          '지원하지 않는 이미지 형식입니다. png또는 jpg 파일로 다시 시도해보세요',
+          "지원하지 않는 이미지 형식입니다. png또는 jpg 파일로 다시 시도해보세요",
           404
         );
       }
 
       // 조잡하지만 임시방편으로
-      let type = 'png';
-      if (file.mimetype == 'image/svg+xml') {
-        type = 'svg';
+      let type = "png";
+      if (file.mimetype == "image/svg+xml") {
+        type = "svg";
       }
 
       s3.upload(
@@ -106,12 +114,12 @@ export class PageService {
           Bucket: process.env.S3_MAIN_BUCKET_NAME,
           Key: `pages/${id}/logo.${type}`,
           ContentType: file.mimetype,
-          Body: Buffer.from(file.buffer, 'binary'),
+          Body: Buffer.from(file.buffer, "binary"),
         },
         (error, data) => {
           if (error) {
             throw new HttpException(
-              '파일을 업로드 할 수 없습니다. 관리자에게 문의하세요.',
+              "파일을 업로드 할 수 없습니다. 관리자에게 문의하세요.",
               401
             );
           }

@@ -1,6 +1,6 @@
-import { Model } from 'mongoose';
-import { Page, PageDocument } from './pages.schema';
-import { Request } from 'express';
+import { Model } from "mongoose";
+import { Page, PageDocument } from "./pages.schema";
+import { Request } from "express";
 export declare class PageService {
     private pageModel;
     constructor(pageModel: Model<PageDocument>);
@@ -10,6 +10,6 @@ export declare class PageService {
         _id: any;
     }>;
     getPageHistory(title: string): Promise<any>;
-    listPage(page: number, query: Request['query']): Promise<Page[]>;
+    listPage(page: number, query: Request["query"]): Promise<Page[]>;
     uploadImage(id: string, file: any): Promise<unknown>;
 }
